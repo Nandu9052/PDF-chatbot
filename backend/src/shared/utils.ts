@@ -29,8 +29,8 @@ const SUPPORTED_PROVIDERS = [
  * @returns A Promise that resolves to a BaseChatModel instance.
  */
 export async function loadChatModel(
-  fullySpecifiedName: string = 'groq/openai/gpt-oss-120b',
-  temperature: number = 0.0,
+  fullySpecifiedName = 'groq/openai/gpt-oss-120b',
+  temperature = 0.0,
 ): Promise<BaseChatModel> {
   const name = fullySpecifiedName || 'groq/openai/gpt-oss-120b';
 

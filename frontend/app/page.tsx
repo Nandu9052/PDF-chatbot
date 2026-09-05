@@ -50,7 +50,11 @@ export default function Home() {
       } catch (error) {
         console.warn('Initial thread creation fallback to UUID:', error);
         // Ensure user can immediately start typing with a client-generated thread ID
-        setThreadId(typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `thread_${Date.now()}`);
+        setThreadId(
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `thread_${Date.now()}`,
+        );
       }
     };
     initThread();
@@ -70,7 +74,10 @@ export default function Home() {
 
     let activeThreadId = threadId;
     if (!activeThreadId) {
-      activeThreadId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `thread_${Date.now()}`;
+      activeThreadId =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `thread_${Date.now()}`;
       setThreadId(activeThreadId);
     }
 
@@ -111,9 +118,13 @@ export default function Home() {
       const decoder = new TextDecoder();
       let streamText = '';
 
-      while (true) {
+      let isReading = true;
+      while (isReading) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          isReading = false;
+          break;
+        }
 
         const chunkStr = decoder.decode(value);
         const lines = chunkStr.split('\n').filter(Boolean);
@@ -137,7 +148,8 @@ export default function Home() {
             if (!msg) return '';
             if (typeof msg === 'string') return msg;
             if (typeof msg.content === 'string') return msg.content;
-            if (typeof msg.kwargs?.content === 'string') return msg.kwargs.content;
+            if (typeof msg.kwargs?.content === 'string')
+              return msg.kwargs.content;
             if (Array.isArray(msg.content)) {
               return msg.content
                 .map((c: any) => (typeof c === 'string' ? c : c.text || ''))
@@ -158,7 +170,10 @@ export default function Home() {
           // 1. Handle error events from LangGraph or proxy route
           if (event === 'error' || sseEvent.error) {
             const rawError =
-              data?.message || data?.error || sseEvent.error || 'An error occurred';
+              data?.message ||
+              data?.error ||
+              sseEvent.error ||
+              'An error occurred';
             console.error('SSE error event received:', rawError);
             toast({
               title: 'Generation Error',
@@ -197,7 +212,8 @@ export default function Home() {
                     newArr.length > 0 &&
                     newArr[newArr.length - 1].role === 'assistant'
                   ) {
-                    newArr[newArr.length - 1].content = cleanResponseText(streamText);
+                    newArr[newArr.length - 1].content =
+                      cleanResponseText(streamText);
                     newArr[newArr.length - 1].sources =
                       lastRetrievedDocsRef.current;
                   }
@@ -209,12 +225,11 @@ export default function Home() {
             const msgList = Array.isArray(data) ? data : [data];
             const item = msgList[0];
             const token = getMsgContent(item);
-            if (
-              token &&
-              !isHumanMsg(item) &&
-              !token.startsWith('{"route"')
-            ) {
-              if (token.length > streamText.length && token.startsWith(streamText)) {
+            if (token && !isHumanMsg(item) && !token.startsWith('{"route"')) {
+              if (
+                token.length > streamText.length &&
+                token.startsWith(streamText)
+              ) {
                 streamText = token;
               } else {
                 streamText += token;
@@ -225,7 +240,8 @@ export default function Home() {
                   newArr.length > 0 &&
                   newArr[newArr.length - 1].role === 'assistant'
                 ) {
-                  newArr[newArr.length - 1].content = cleanResponseText(streamText);
+                  newArr[newArr.length - 1].content =
+                    cleanResponseText(streamText);
                   newArr[newArr.length - 1].sources =
                     lastRetrievedDocsRef.current;
                 }
@@ -253,11 +269,7 @@ export default function Home() {
                 for (let i = nodeVal.messages.length - 1; i >= 0; i--) {
                   const m = nodeVal.messages[i];
                   const text = getMsgContent(m);
-                  if (
-                    text &&
-                    !isHumanMsg(m) &&
-                    !text.startsWith('{"route"')
-                  ) {
+                  if (text && !isHumanMsg(m) && !text.startsWith('{"route"')) {
                     streamText = text;
                     setMessages((prev) => {
                       const newArr = [...prev];
@@ -265,7 +277,8 @@ export default function Home() {
                         newArr.length > 0 &&
                         newArr[newArr.length - 1].role === 'assistant'
                       ) {
-                        newArr[newArr.length - 1].content = cleanResponseText(text);
+                        newArr[newArr.length - 1].content =
+                          cleanResponseText(text);
                         newArr[newArr.length - 1].sources =
                           lastRetrievedDocsRef.current;
                       }
@@ -286,11 +299,7 @@ export default function Home() {
             for (let i = data.messages.length - 1; i >= 0; i--) {
               const m = data.messages[i];
               const text = getMsgContent(m);
-              if (
-                text &&
-                !isHumanMsg(m) &&
-                !text.startsWith('{"route"')
-              ) {
+              if (text && !isHumanMsg(m) && !text.startsWith('{"route"')) {
                 streamText = text;
                 setMessages((prev) => {
                   const newArr = [...prev];

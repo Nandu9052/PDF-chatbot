@@ -50,7 +50,10 @@ export class LocalTransformersEmbeddings extends Embeddings {
  * Defaults to free local embeddings if OPENAI_API_KEY is not set.
  */
 export function getEmbeddings(): Embeddings {
-  if (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('YOUR_')) {
+  if (
+    process.env.OPENAI_API_KEY &&
+    !process.env.OPENAI_API_KEY.includes('YOUR_')
+  ) {
     return new OpenAIEmbeddings({
       model: 'text-embedding-3-small',
     });

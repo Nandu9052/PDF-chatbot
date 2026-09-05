@@ -40,7 +40,9 @@ export async function makeSupabaseRetriever(
     !process.env.SUPABASE_SERVICE_ROLE_KEY.includes('YOUR_');
 
   if (!hasSupabase) {
-    console.log('Supabase credentials not found or placeholder; falling back to in-memory vector store.');
+    console.log(
+      'Supabase credentials not found or placeholder; falling back to in-memory vector store.',
+    );
     return makeMemoryRetriever(configuration);
   }
 

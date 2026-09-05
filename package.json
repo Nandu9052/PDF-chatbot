@@ -4,8 +4,7 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "author": "Mayo Oshin",
-  "license": "MIT",
+  "packageManager": "yarn@1.22.22",
   "workspaces": [
     "backend",
     "frontend"
@@ -16,15 +15,14 @@
     "dev:frontend": "yarn --cwd frontend dev",
     "build": "yarn --cwd backend build && yarn --cwd frontend build",
     "start": "concurrently -k -n \"backend,frontend\" -c \"cyan,magenta\" \"yarn --cwd backend start\" \"yarn --cwd frontend start\"",
-    "turbo:command": "yarn turbo",
     "postinstall": "node scripts/patch-langgraph-cli.js",
-    "lint": "yarn run turbo:command lint",
-    "lint:fix": "yarn run turbo:command lint:fix",
-    "format": "yarn run turbo:command format",
-    "format:check": "yarn run turbo:command format:check"
+    "lint": "yarn --cwd backend lint && yarn --cwd frontend lint",
+    "lint:all": "yarn --cwd backend lint:all && yarn --cwd frontend lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check \"backend/src/**/*.{ts,js,json}\" \"frontend/**/*.{ts,tsx,js,json}\" \"scripts/**/*.{js,mjs}\" \"package.json\""
   },
   "devDependencies": {
     "concurrently": "^10.0.5",
-    "turbo": "latest"
+    "prettier": "^3.3.3"
   }
 }

@@ -54,24 +54,47 @@ export function ChatMessage({ message }: ChatMessageProps) {
         ) : (
           <>
             {isUser ? (
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                {message.content}
+              </p>
             ) : (
               <div className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                    ul: ({ children }) => <ul className="list-disc pl-5 mb-2 space-y-1">{children}</ul>,
-                    ol: ({ children }) => <ol className="list-decimal pl-5 mb-2 space-y-1">{children}</ol>,
-                    li: ({ children }) => <li className="mb-0.5">{children}</li>,
+                    p: ({ children }) => (
+                      <p className="mb-2 last:mb-0">{children}</p>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="list-disc pl-5 mb-2 space-y-1">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="list-decimal pl-5 mb-2 space-y-1">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => (
+                      <li className="mb-0.5">{children}</li>
+                    ),
                     code: ({ className, children, ...props }: any) => {
-                      const isInline = !className && typeof children === 'string' && !children.includes('\n');
+                      const isInline =
+                        !className &&
+                        typeof children === 'string' &&
+                        !children.includes('\n');
                       return isInline ? (
-                        <code className="bg-foreground/10 px-1.5 py-0.5 rounded text-xs font-mono font-semibold" {...props}>
+                        <code
+                          className="bg-foreground/10 px-1.5 py-0.5 rounded text-xs font-mono font-semibold"
+                          {...props}
+                        >
                           {children}
                         </code>
                       ) : (
-                        <code className="block bg-zinc-900 text-zinc-100 p-3 rounded-lg text-xs font-mono overflow-x-auto my-2 shadow-sm" {...props}>
+                        <code
+                          className="block bg-zinc-900 text-zinc-100 p-3 rounded-lg text-xs font-mono overflow-x-auto my-2 shadow-sm"
+                          {...props}
+                        >
                           {children}
                         </code>
                       );
@@ -89,7 +112,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
                       </th>
                     ),
                     td: ({ children }) => (
-                      <td className="px-3 py-1.5 border-t border-border">{children}</td>
+                      <td className="px-3 py-1.5 border-t border-border">
+                        {children}
+                      </td>
                     ),
                   }}
                 >

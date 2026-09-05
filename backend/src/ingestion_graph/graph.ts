@@ -41,7 +41,10 @@ async function ingestDocs(
     const retriever = await makeRetriever(config);
     await retriever.addDocuments(docs);
   } catch (error) {
-    console.warn('Supabase indexing error, falling back to local memory store:', (error as Error)?.message);
+    console.warn(
+      'Supabase indexing error, falling back to local memory store:',
+      (error as Error)?.message,
+    );
     const { getMemoryVectorStore } = await import('../shared/retrieval.js');
     const memoryStore = getMemoryVectorStore();
     await memoryStore.addDocuments(docs);

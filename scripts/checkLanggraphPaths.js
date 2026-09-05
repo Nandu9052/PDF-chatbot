@@ -1,16 +1,14 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Function to check if a file exists
 function fileExists(filePath) {
   return fs.existsSync(filePath);
 }
 
-// Function to check if an object is exported from a file
 function isObjectExported(filePath, objectName) {
   try {
-    const fileContent = fs.readFileSync(filePath, "utf8");
+    const fileContent = fs.readFileSync(filePath, 'utf8');
     const exportRegex = new RegExp(
       `export\\s+(?:const|let|var)\\s+${objectName}\\s*=|export\\s+\\{[^}]*\\b${objectName}\\b[^}]*\\}`,
     );
@@ -21,22 +19,28 @@ function isObjectExported(filePath, objectName) {
   }
 }
 
-// Main function to check langgraph.json
 function checkLanggraphPaths() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const langgraphPath = path.join(__dirname, "..", "langgraph.json");
+  const rootDir = path.resolve(__dirname, '..');
+
+  let langgraphPath = path.join(rootDir, 'langgraph.json');
+  let baseDir = rootDir;
+  if (!fileExists(langgraphPath)) {
+    langgraphPath = path.join(rootDir, 'backend', 'langgraph.json');
+    baseDir = path.join(rootDir, 'backend');
+  }
 
   if (!fileExists(langgraphPath)) {
-    console.error("langgraph.json not found in the root directory");
+    console.error('langgraph.json not found in root or backend directory');
     process.exit(1);
   }
 
   try {
-    const langgraphContent = JSON.parse(fs.readFileSync(langgraphPath, "utf8"));
+    const langgraphContent = JSON.parse(fs.readFileSync(langgraphPath, 'utf8'));
     const graphs = langgraphContent.graphs;
 
-    if (!graphs || typeof graphs !== "object") {
+    if (!graphs || typeof graphs !== 'object') {
       console.error('Invalid or missing "graphs" object in langgraph.json');
       process.exit(1);
     }
@@ -44,8 +48,8 @@ function checkLanggraphPaths() {
     let hasError = false;
 
     for (const [key, value] of Object.entries(graphs)) {
-      const [filePath, objectName] = value.split(":");
-      const fullPath = path.join(__dirname, "..", filePath);
+      const [filePath, objectName] = value.split(':');
+      const fullPath = path.resolve(baseDir, filePath);
 
       if (!fileExists(fullPath)) {
         console.error(`File not found: ${fullPath}`);
@@ -65,7 +69,7 @@ function checkLanggraphPaths() {
       process.exit(1);
     } else {
       console.log(
-        "All paths in langgraph.json are valid and objects are exported correctly.",
+        'All paths in langgraph.json are valid and objects are exported correctly.',
       );
     }
   } catch (error) {

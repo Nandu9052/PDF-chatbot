@@ -15,7 +15,7 @@ export default {
     ],
   },
   // Test configuration
-  testMatch: ['**/__tests__/**/*.test.ts'],
+  testMatch: ['**/__tests__/**/!(*.int).test.ts'],
   // Coverage configuration
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

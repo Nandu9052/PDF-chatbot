@@ -29,7 +29,8 @@ export async function POST(req: Request) {
     if (!process.env.LANGGRAPH_RETRIEVAL_ASSISTANT_ID) {
       return new NextResponse(
         JSON.stringify({
-          error: 'LANGGRAPH_RETRIEVAL_ASSISTANT_ID is not set in environment variables',
+          error:
+            'LANGGRAPH_RETRIEVAL_ASSISTANT_ID is not set in environment variables',
         }),
         { status: 500, headers: { 'Content-Type': 'application/json' } },
       );
@@ -67,7 +68,8 @@ export async function POST(req: Request) {
           } catch (error: any) {
             console.error('Streaming error during graph execution:', error);
             const errorMessage =
-              error?.message || 'Streaming error occurred during graph execution';
+              error?.message ||
+              'Streaming error occurred during graph execution';
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
@@ -94,13 +96,10 @@ export async function POST(req: Request) {
       console.error('Stream initialization error:', error);
       const errorMessage =
         error?.message || 'Failed to connect to LangGraph backend server';
-      return new NextResponse(
-        JSON.stringify({ error: errorMessage }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return new NextResponse(JSON.stringify({ error: errorMessage }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
   } catch (error: any) {
     console.error('Route error:', error);

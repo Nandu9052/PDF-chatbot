@@ -55,7 +55,10 @@ function normalizeMessage(msg: any): BaseMessage | null {
   return new HumanMessage({ content: content.trim() });
 }
 
-function cleanMessageHistory(messages: any[], currentQuery?: string): BaseMessage[] {
+function cleanMessageHistory(
+  messages: any[],
+  currentQuery?: string,
+): BaseMessage[] {
   if (!Array.isArray(messages)) return [];
   const result: BaseMessage[] = [];
   for (const m of messages) {
@@ -121,12 +124,14 @@ async function generateResponse(
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
   const userQuery = state.query ? state.query.trim() : '';
-  const historyHumanMessage = new HumanMessage({ content: userQuery || 'Hello' });
+  const historyHumanMessage = new HumanMessage({
+    content: userQuery || 'Hello',
+  });
 
   // Handle empty or whitespace query
   if (!userQuery) {
     const defaultResponse = new AIMessage({
-      content: "Please provide a question about the uploaded document.",
+      content: 'Please provide a question about the uploaded document.',
     });
     return { messages: [historyHumanMessage, defaultResponse] };
   }
@@ -151,7 +156,11 @@ async function generateResponse(
   });
 
   // Strict conceptual order: SystemMessage -> Conversation history -> Current question with context
-  const messageSequence = [systemMessage, ...cleanedHistory, currentPromptMessage];
+  const messageSequence = [
+    systemMessage,
+    ...cleanedHistory,
+    currentPromptMessage,
+  ];
 
   const response = await model.invoke(messageSequence);
   const rawContent =
@@ -181,4 +190,3 @@ const builder = new StateGraph(
 export const graph = builder.compile().withConfig({
   runName: 'RetrievalGraph',
 });
-

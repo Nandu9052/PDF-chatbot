@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+.next
+out
+coverage
+.turbo
+.swc
+yarn.lock
+package-lock.json
+*.log

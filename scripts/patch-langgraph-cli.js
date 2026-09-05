@@ -7,7 +7,10 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '..');
 
 function patchParser() {
-  const parserPath = path.resolve(rootDir, 'node_modules/@langchain/langgraph-cli/dist/graph/parser/parser.mjs');
+  const parserPath = path.resolve(
+    rootDir,
+    'node_modules/@langchain/langgraph-cli/dist/graph/parser/parser.mjs',
+  );
   if (!fs.existsSync(parserPath)) return;
   let content = fs.readFileSync(parserPath, 'utf8');
 
@@ -93,11 +96,16 @@ function patchParser() {
   }
 
   fs.writeFileSync(parserPath, content, 'utf8');
-  console.log('[patch] Patched @langchain/langgraph-cli parser.mjs successfully.');
+  console.log(
+    '[patch] Patched @langchain/langgraph-cli parser.mjs successfully.',
+  );
 }
 
 function patchLogging() {
-  const loggingPath = path.resolve(rootDir, 'node_modules/@langchain/langgraph-cli/dist/logging.mjs');
+  const loggingPath = path.resolve(
+    rootDir,
+    'node_modules/@langchain/langgraph-cli/dist/logging.mjs',
+  );
   if (!fs.existsSync(loggingPath)) return;
   let content = fs.readFileSync(loggingPath, 'utf8');
 
@@ -131,12 +139,17 @@ function patchLogging() {
   if (content.includes(oldLogging)) {
     content = content.replace(oldLogging, newLogging);
     fs.writeFileSync(loggingPath, content, 'utf8');
-    console.log('[patch] Patched @langchain/langgraph-cli logging.mjs successfully.');
+    console.log(
+      '[patch] Patched @langchain/langgraph-cli logging.mjs successfully.',
+    );
   }
 }
 
 function patchIPC() {
-  const ipcPath = path.resolve(rootDir, 'node_modules/@langchain/langgraph-cli/dist/cli/utils/ipc/client.mjs');
+  const ipcPath = path.resolve(
+    rootDir,
+    'node_modules/@langchain/langgraph-cli/dist/cli/utils/ipc/client.mjs',
+  );
   if (!fs.existsSync(ipcPath)) return;
   let content = fs.readFileSync(ipcPath, 'utf8');
 
@@ -179,16 +192,24 @@ export const connectToServer = (processId = process.ppid) => new Promise((resolv
 });
 `;
     fs.writeFileSync(ipcPath, newIPC, 'utf8');
-    console.log('[patch] Patched @langchain/langgraph-cli IPC client.mjs successfully.');
+    console.log(
+      '[patch] Patched @langchain/langgraph-cli IPC client.mjs successfully.',
+    );
   }
 }
 
 function patchDevNode() {
-  const devNodePath = path.resolve(rootDir, 'node_modules/@langchain/langgraph-cli/dist/cli/dev.node.mjs');
+  const devNodePath = path.resolve(
+    rootDir,
+    'node_modules/@langchain/langgraph-cli/dist/cli/dev.node.mjs',
+  );
   if (!fs.existsSync(devNodePath)) return;
   let content = fs.readFileSync(devNodePath, 'utf8');
 
-  if (content.includes('"watch",') || !content.includes('cwd: options.projectCwd')) {
+  if (
+    content.includes('"watch",') ||
+    !content.includes('cwd: options.projectCwd')
+  ) {
     const newDevNode = `import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import {} from "../utils/config.mjs";
@@ -224,7 +245,9 @@ For production use, please use LangGraph Cloud.
 }
 `;
     fs.writeFileSync(devNodePath, newDevNode, 'utf8');
-    console.log('[patch] Patched @langchain/langgraph-cli dev.node.mjs successfully.');
+    console.log(
+      '[patch] Patched @langchain/langgraph-cli dev.node.mjs successfully.',
+    );
   }
 }
 
@@ -232,5 +255,3 @@ patchParser();
 patchLogging();
 patchIPC();
 patchDevNode();
-
-

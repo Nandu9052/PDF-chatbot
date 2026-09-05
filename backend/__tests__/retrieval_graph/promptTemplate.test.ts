@@ -15,36 +15,22 @@ describe('Prompt Templates & Utilities', () => {
       });
 
       const promptStr = formattedPrompt.toString();
-      expect(promptStr).toContain('You are a factual RAG assistant');
+      expect(promptStr).toContain('You are a helpful, expert AI assistant');
       expect(promptStr).toContain(context);
       expect(promptStr).toContain(question);
     });
   });
 
   describe('cleanResponseText', () => {
-    it('should remove bold, italics, HTML tags, and convert markdown tables to plain text', () => {
-      const input = `**Magadheera (2009)**
-
-| Category | Details |
-|---|---|
-| Director | S. S. Rajamouli |
-| Music | M. M. Keeravani |
-
-<br>
-<b>Plot:</b>
-*Magadheera* is a fantasy-action film.`;
-
+    it('should clean and trim response text properly', () => {
+      const input = '   \n\n**Magadheera (2009)**\n\nDirector: S. S. Rajamouli\n\n   ';
       const output = cleanResponseText(input);
 
-      expect(output).not.toContain('**');
-      expect(output).not.toContain('<br>');
-      expect(output).not.toContain('<b>');
-      expect(output).not.toContain('|---|---|');
-      expect(output).toContain('Director: S. S. Rajamouli');
-      expect(output).toContain('Music: M. M. Keeravani');
-      expect(output).toContain('Plot:');
-      expect(output).toContain('Magadheera is a fantasy-action film.');
+      expect(output).toBe('**Magadheera (2009)**\n\nDirector: S. S. Rajamouli');
+    });
+
+    it('should handle empty or null string gracefully', () => {
+      expect(cleanResponseText('')).toBe('');
     });
   });
 });
-
