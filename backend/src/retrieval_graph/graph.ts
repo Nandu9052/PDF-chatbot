@@ -1,18 +1,14 @@
 import { StateGraph, START, END } from '@langchain/langgraph';
 import { AgentStateAnnotation } from './state.js';
 import { makeRetriever } from '../shared/retrieval.js';
-import { formatDocs } from './utils.js';
+import { formatDocs, cleanResponseText } from './utils.js';
 import {
   BaseMessage,
   HumanMessage,
   AIMessage,
   SystemMessage,
 } from '@langchain/core/messages';
-import {
-  DOCUMENT_RESPONSE_PROMPT,
-  DIRECT_RESPONSE_PROMPT,
-  ROUTER_SYSTEM_PROMPT,
-} from './prompts.js';
+import { SYSTEM_PROMPT } from './prompts.js';
 import { RunnableConfig } from '@langchain/core/runnables';
 import {
   AgentConfigurationAnnotation,
@@ -59,98 +55,49 @@ function normalizeMessage(msg: any): BaseMessage | null {
   return new HumanMessage({ content: content.trim() });
 }
 
-function cleanMessageHistory(messages: any[]): BaseMessage[] {
+function cleanMessageHistory(messages: any[], currentQuery?: string): BaseMessage[] {
   if (!Array.isArray(messages)) return [];
   const result: BaseMessage[] = [];
   for (const m of messages) {
     const normalized = normalizeMessage(m);
-    if (normalized) {
-      result.push(normalized);
+    if (!normalized) continue;
+
+    // CRITICAL: Filter out any SystemMessages from history so that only ONE SystemMessage is ever at the top
+    const type = normalized._getType?.() || (normalized as any).type;
+    if (type === 'system') {
+      continue;
     }
+
+    // Skip trailing duplicate of the current user question if already recorded in messages
+    if (
+      currentQuery &&
+      type === 'human' &&
+      normalized.content.toString().trim() === currentQuery.trim()
+    ) {
+      continue;
+    }
+
+    result.push(normalized);
   }
   return result;
-}
-
-async function checkQueryType(
-  state: typeof AgentStateAnnotation.State,
-  _config: RunnableConfig,
-): Promise<{
-  route: 'retrieve' | 'direct';
-}> {
-  try {
-    const model = await loadChatModel('openai/gpt-oss-20b', 0.0);
-
-    const routingPrompt = ROUTER_SYSTEM_PROMPT;
-    const formattedPrompt = await routingPrompt.invoke({
-      query: state.query,
-    });
-
-    const response = await model.invoke(formattedPrompt.toChatMessages());
-    const text =
-      typeof response.content === 'string' ? response.content.toLowerCase() : '';
-
-    if (text.includes('direct') && !text.includes('retrieve')) {
-      return { route: 'direct' };
-    }
-    return { route: 'retrieve' };
-  } catch {
-    return { route: 'direct' };
-  }
-}
-
-async function answerQueryDirectly(
-  state: typeof AgentStateAnnotation.State,
-  config: RunnableConfig,
-): Promise<typeof AgentStateAnnotation.Update> {
-  const userHumanMessage = new HumanMessage({ content: state.query });
-  const configuration = ensureAgentConfiguration(config);
-  const model = await loadChatModel(configuration.queryModel, 0.1);
-
-  const formattedPrompt = await DIRECT_RESPONSE_PROMPT.invoke({
-    question: state.query,
-  });
-  const promptMessages = formattedPrompt.toChatMessages();
-  const systemMsg =
-    promptMessages[0] ||
-    new SystemMessage({ content: 'You are an accurate, helpful AI assistant.' });
-
-  const cleanedHistory = cleanMessageHistory(state.messages);
-  const history = [systemMsg, ...cleanedHistory, userHumanMessage];
-  const response = await model.invoke(history);
-  const cleanResponse = new AIMessage({
-    content: typeof response.content === 'string' ? response.content : String(response.content || ''),
-  });
-  return { messages: [userHumanMessage, cleanResponse] };
-}
-
-async function routeQuery(
-  state: typeof AgentStateAnnotation.State,
-): Promise<'retrieveDocuments' | 'generateDirectAnswer'> {
-  const route = state.route;
-  if (!route) {
-    return 'retrieveDocuments';
-  }
-
-  if (route === 'retrieve') {
-    return 'retrieveDocuments';
-  } else if (route === 'direct') {
-    return 'generateDirectAnswer';
-  } else {
-    return 'retrieveDocuments';
-  }
 }
 
 async function retrieveDocuments(
   state: typeof AgentStateAnnotation.State,
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
+  const query = state.query ? state.query.trim() : '';
+  if (!query) {
+    return { documents: [] };
+  }
+
   try {
     const retriever = await makeRetriever(config);
-    let response = await retriever.invoke(state.query);
+    let response = await retriever.invoke(query);
     if (!response || response.length === 0) {
       const { getMemoryVectorStore } = await import('../shared/retrieval.js');
       const memoryRetriever = getMemoryVectorStore().asRetriever({ k: 5 });
-      response = await memoryRetriever.invoke(state.query);
+      response = await memoryRetriever.invoke(query);
     }
     return { documents: response || [] };
   } catch (error) {
@@ -161,7 +108,7 @@ async function retrieveDocuments(
     try {
       const { getMemoryVectorStore } = await import('../shared/retrieval.js');
       const memoryRetriever = getMemoryVectorStore().asRetriever({ k: 5 });
-      const response = await memoryRetriever.invoke(state.query);
+      const response = await memoryRetriever.invoke(query);
       return { documents: response || [] };
     } catch {
       return { documents: [] };
@@ -173,35 +120,52 @@ async function generateResponse(
   state: typeof AgentStateAnnotation.State,
   config: RunnableConfig,
 ): Promise<typeof AgentStateAnnotation.Update> {
-  const configuration = ensureAgentConfiguration(config);
-  const context = formatDocs(state.documents);
-  const model = await loadChatModel(configuration.queryModel, 0.1);
-  const userHumanMessage = new HumanMessage({ content: state.query });
+  const userQuery = state.query ? state.query.trim() : '';
+  const historyHumanMessage = new HumanMessage({ content: userQuery || 'Hello' });
 
-  let systemMsg: any;
-  if (context && context.trim().length > 0) {
-    const formattedPrompt = await DOCUMENT_RESPONSE_PROMPT.invoke({
-      question: state.query,
-      context,
+  // Handle empty or whitespace query
+  if (!userQuery) {
+    const defaultResponse = new AIMessage({
+      content: "Please provide a question about the uploaded document.",
     });
-    const promptMessages = formattedPrompt.toChatMessages();
-    systemMsg = promptMessages[0];
-  } else {
-    const formattedPrompt = await DIRECT_RESPONSE_PROMPT.invoke({
-      question: state.query,
-    });
-    const promptMessages = formattedPrompt.toChatMessages();
-    systemMsg = promptMessages[0];
+    return { messages: [historyHumanMessage, defaultResponse] };
   }
 
-  const cleanedHistory = cleanMessageHistory(state.messages);
-  const messageHistory = [systemMsg, ...cleanedHistory, userHumanMessage];
-  const response = await model.invoke(messageHistory);
-  const cleanResponse = new AIMessage({
-    content: typeof response.content === 'string' ? response.content : String(response.content || ''),
+  const context = formatDocs(state.documents);
+  const contextText = context && context.trim() ? context : 'None provided.';
+
+  const configuration = ensureAgentConfiguration(config);
+  const model = await loadChatModel(configuration.queryModel, 0.0);
+
+  // 1. SystemMessage is ALWAYS the first message
+  const systemMessage = new SystemMessage({
+    content: SYSTEM_PROMPT,
   });
 
-  return { messages: [userHumanMessage, cleanResponse] };
+  // 2. Cleaned conversation history (only HumanMessage and AIMessage, NO SystemMessage)
+  const cleanedHistory = cleanMessageHistory(state.messages, userQuery);
+
+  // 3. Current user question with clearly separated retrieved context
+  const currentPromptMessage = new HumanMessage({
+    content: `RETRIEVED CONTEXT:\n${contextText}\n\nUSER QUESTION:\n${userQuery}`,
+  });
+
+  // Strict conceptual order: SystemMessage -> Conversation history -> Current question with context
+  const messageSequence = [systemMessage, ...cleanedHistory, currentPromptMessage];
+
+  const response = await model.invoke(messageSequence);
+  const rawContent =
+    typeof response.content === 'string'
+      ? response.content
+      : String(response.content || '');
+
+  // Apply final normalization layer to eliminate any accidental markdown bold, italics, tables, or HTML
+  const cleanedContent = cleanResponseText(rawContent);
+  const cleanResponse = new AIMessage({
+    content: cleanedContent,
+  });
+
+  return { messages: [historyHumanMessage, cleanResponse] };
 }
 
 const builder = new StateGraph(
@@ -210,17 +174,11 @@ const builder = new StateGraph(
 )
   .addNode('retrieveDocuments', retrieveDocuments)
   .addNode('generateResponse', generateResponse)
-  .addNode('checkQueryType', checkQueryType)
-  .addNode('generateDirectAnswer', answerQueryDirectly)
-  .addEdge(START, 'checkQueryType')
-  .addConditionalEdges('checkQueryType', routeQuery, [
-    'retrieveDocuments',
-    'generateDirectAnswer',
-  ])
+  .addEdge(START, 'retrieveDocuments')
   .addEdge('retrieveDocuments', 'generateResponse')
-  .addEdge('generateResponse', END)
-  .addEdge('generateDirectAnswer', END);
+  .addEdge('generateResponse', END);
 
 export const graph = builder.compile().withConfig({
   runName: 'RetrievalGraph',
 });
+

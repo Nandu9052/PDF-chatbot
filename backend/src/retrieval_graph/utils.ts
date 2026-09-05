@@ -18,3 +18,12 @@ export function formatDocs(docs?: Document[]): string {
   const formatted = docs.map(formatDoc).join('\n');
   return `<documents>\n${formatted}\n</documents>`;
 }
+
+/**
+ * Normalizes LLM responses to ensure clean, trimmed content ready for rich Markdown rendering.
+ */
+export function cleanResponseText(text: string): string {
+  if (!text) return '';
+  return text.trim();
+}
+

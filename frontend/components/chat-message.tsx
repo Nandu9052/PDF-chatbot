@@ -2,6 +2,8 @@ import { Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { PDFDocument } from '@/types/graphTypes';
 import {
   Accordion,
@@ -41,7 +43,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[85%] ${isUser ? 'bg-black text-white' : 'bg-muted'} rounded-2xl px-4 py-2`}
+        className={`max-w-[85%] ${isUser ? 'bg-black text-white' : 'bg-muted'} rounded-2xl px-4 py-3`}
       >
         {isLoading ? (
           <div className="flex space-x-1 h-6 items-center">
@@ -51,7 +53,50 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
         ) : (
           <>
-            <p className="whitespace-pre-wrap">{message.content}</p>
+            {isUser ? (
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+            ) : (
+              <div className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc pl-5 mb-2 space-y-1">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-5 mb-2 space-y-1">{children}</ol>,
+                    li: ({ children }) => <li className="mb-0.5">{children}</li>,
+                    code: ({ className, children, ...props }: any) => {
+                      const isInline = !className && typeof children === 'string' && !children.includes('\n');
+                      return isInline ? (
+                        <code className="bg-foreground/10 px-1.5 py-0.5 rounded text-xs font-mono font-semibold" {...props}>
+                          {children}
+                        </code>
+                      ) : (
+                        <code className="block bg-zinc-900 text-zinc-100 p-3 rounded-lg text-xs font-mono overflow-x-auto my-2 shadow-sm" {...props}>
+                          {children}
+                        </code>
+                      );
+                    },
+                    table: ({ children }) => (
+                      <div className="overflow-x-auto my-2 rounded-md border border-border">
+                        <table className="min-w-full text-xs divide-y divide-border">
+                          {children}
+                        </table>
+                      </div>
+                    ),
+                    th: ({ children }) => (
+                      <th className="bg-muted-foreground/10 px-3 py-1.5 text-left font-semibold text-xs uppercase tracking-wider">
+                        {children}
+                      </th>
+                    ),
+                    td: ({ children }) => (
+                      <td className="px-3 py-1.5 border-t border-border">{children}</td>
+                    ),
+                  }}
+                >
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+            )}
             {!isUser && (
               <div className="flex gap-2 mt-2">
                 <Button

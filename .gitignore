@@ -1,53 +1,61 @@
-# npm
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
 
-# misc
-.DS_Store
+# Environment variables & Secrets
+.env
+.env*
+*.env
+config.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 *.pem
+*.key
+*.cert
 
-# debug
+# Allow safe example files
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# Python Environments
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.pyc
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+.turbo/
+.swc/
+apps/docs/public/registry/
+
+# Logs & Debug
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 ui-debug.log*
 
-# local env files
-.env*.local
+# Testing & Coverage
+coverage/
+.nyc_output/
 
-# typescript
-*.tsbuildinfo
-
-# vercel
-.vercel
-
-# testing
-coverage
-
-# next.js
-.next/
-out/
-
-# fumadocs
-.source
-
-# production
-build
-dist
-apps/docs/public/registry/
-
-# turbo
-.turbo
-
-# env
-.env
-
-# cursor
-.cursor
+# OS / Editor
+.DS_Store
+Thumbs.db
 .cursor/
-
-#llm_context
+.vscode/
+.idea/
+.vercel
 llm_context/
-
-test_docs
-
-.swc
+test_docs/

@@ -18,6 +18,7 @@ import {
   RetrieveDocumentsNodeUpdates,
 } from '@/types/graphTypes';
 import { Card, CardContent } from '@/components/ui/card';
+import { cleanResponseText } from '@/lib/utils';
 export default function Home() {
   const { toast } = useToast(); // Add this hook
   const [messages, setMessages] = useState<
@@ -196,7 +197,7 @@ export default function Home() {
                     newArr.length > 0 &&
                     newArr[newArr.length - 1].role === 'assistant'
                   ) {
-                    newArr[newArr.length - 1].content = streamText;
+                    newArr[newArr.length - 1].content = cleanResponseText(streamText);
                     newArr[newArr.length - 1].sources =
                       lastRetrievedDocsRef.current;
                   }
@@ -224,7 +225,7 @@ export default function Home() {
                   newArr.length > 0 &&
                   newArr[newArr.length - 1].role === 'assistant'
                 ) {
-                  newArr[newArr.length - 1].content = streamText;
+                  newArr[newArr.length - 1].content = cleanResponseText(streamText);
                   newArr[newArr.length - 1].sources =
                     lastRetrievedDocsRef.current;
                 }
@@ -264,7 +265,7 @@ export default function Home() {
                         newArr.length > 0 &&
                         newArr[newArr.length - 1].role === 'assistant'
                       ) {
-                        newArr[newArr.length - 1].content = text;
+                        newArr[newArr.length - 1].content = cleanResponseText(text);
                         newArr[newArr.length - 1].sources =
                           lastRetrievedDocsRef.current;
                       }
@@ -297,7 +298,7 @@ export default function Home() {
                     newArr.length > 0 &&
                     newArr[newArr.length - 1].role === 'assistant'
                   ) {
-                    newArr[newArr.length - 1].content = text;
+                    newArr[newArr.length - 1].content = cleanResponseText(text);
                     newArr[newArr.length - 1].sources =
                       lastRetrievedDocsRef.current;
                   }

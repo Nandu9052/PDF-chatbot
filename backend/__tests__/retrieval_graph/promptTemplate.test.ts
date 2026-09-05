@@ -1,42 +1,50 @@
 import {
-  ROUTER_SYSTEM_PROMPT,
-  RESPONSE_SYSTEM_PROMPT,
+  DOCUMENT_RESPONSE_PROMPT,
 } from '../../src/retrieval_graph/prompts.js';
+import { cleanResponseText } from '../../src/retrieval_graph/utils.js';
 
-describe('Prompt Templates', () => {
-  describe('ROUTER_SYSTEM_PROMPT', () => {
-    it('should format the router prompt correctly', async () => {
-      const query = 'What is the capital of France?';
-      const formattedPrompt = await ROUTER_SYSTEM_PROMPT.invoke({
-        query,
-      });
-
-      expect(formattedPrompt.toString()).toContain(
-        'You are a routing assistant',
-      );
-      expect(formattedPrompt.toString()).toContain(query);
-      expect(formattedPrompt.toString()).toContain("'retrieve'");
-      expect(formattedPrompt.toString()).toContain("'direct'");
-    });
-  });
-
-  describe('RESPONSE_SYSTEM_PROMPT', () => {
-    it('should format the response prompt correctly', async () => {
+describe('Prompt Templates & Utilities', () => {
+  describe('DOCUMENT_RESPONSE_PROMPT', () => {
+    it('should format the response prompt correctly with strict grounding', async () => {
       const context = 'Paris is the capital of France.';
       const question = 'Tell me about the capital of France.';
 
-      const formattedPrompt = await RESPONSE_SYSTEM_PROMPT.invoke({
-        context: 'Paris is the capital of France.',
-        question: 'Tell me about the capital of France.',
+      const formattedPrompt = await DOCUMENT_RESPONSE_PROMPT.invoke({
+        context,
+        question,
       });
 
-      console.log(formattedPrompt.toString());
+      const promptStr = formattedPrompt.toString();
+      expect(promptStr).toContain('You are a factual RAG assistant');
+      expect(promptStr).toContain(context);
+      expect(promptStr).toContain(question);
+    });
+  });
 
-      expect(formattedPrompt.toString()).toContain(
-        'You are an assistant for question-answering tasks',
-      );
-      expect(formattedPrompt.toString()).toContain(context);
-      expect(formattedPrompt.toString()).toContain(question);
+  describe('cleanResponseText', () => {
+    it('should remove bold, italics, HTML tags, and convert markdown tables to plain text', () => {
+      const input = `**Magadheera (2009)**
+
+| Category | Details |
+|---|---|
+| Director | S. S. Rajamouli |
+| Music | M. M. Keeravani |
+
+<br>
+<b>Plot:</b>
+*Magadheera* is a fantasy-action film.`;
+
+      const output = cleanResponseText(input);
+
+      expect(output).not.toContain('**');
+      expect(output).not.toContain('<br>');
+      expect(output).not.toContain('<b>');
+      expect(output).not.toContain('|---|---|');
+      expect(output).toContain('Director: S. S. Rajamouli');
+      expect(output).toContain('Music: M. M. Keeravani');
+      expect(output).toContain('Plot:');
+      expect(output).toContain('Magadheera is a fantasy-action film.');
     });
   });
 });
+
