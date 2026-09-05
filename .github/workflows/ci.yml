@@ -22,7 +22,7 @@ jobs:
           node-version: 22.x
           cache: "yarn"
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-engines
       - name: Check formatting
         run: yarn format:check
 
@@ -37,6 +37,6 @@ jobs:
           node-version: 22.x
           cache: "yarn"
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-engines
       - name: Check linting
         run: yarn lint:all
