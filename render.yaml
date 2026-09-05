@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ai-pdf-chatbot
+    env: node
+    plan: free
+    buildCommand: yarn && yarn build
+    startCommand: yarn start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: LANGGRAPH_API_URL
+        value: http://127.0.0.1:2024
+      - key: LANGGRAPH_RETRIEVAL_ASSISTANT_ID
+        value: retrieval_graph
+      - key: LANGGRAPH_INGESTION_ASSISTANT_ID
+        value: ingestion_graph

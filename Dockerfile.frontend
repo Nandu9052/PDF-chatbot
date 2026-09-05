@@ -1,0 +1,25 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json yarn.lock ./
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+COPY scripts ./scripts
+
+RUN yarn install --frozen-lockfile
+
+# Copy frontend source
+COPY frontend ./frontend
+
+# Build Next.js
+WORKDIR /app/frontend
+RUN yarn build
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV NODE_ENV=production
+
+CMD ["yarn", "start"]

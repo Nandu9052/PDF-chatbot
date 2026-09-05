@@ -1,0 +1,25 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json yarn.lock ./
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+COPY scripts ./scripts
+
+RUN yarn install --frozen-lockfile
+
+# Copy backend source
+COPY backend ./backend
+
+# Build TypeScript
+WORKDIR /app/backend
+RUN yarn build
+
+EXPOSE 2024
+
+ENV HOST=0.0.0.0
+ENV PORT=2024
+
+CMD ["node", "scripts/dev-server.mjs"]

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "2024:2024"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - HOST=0.0.0.0
+      - PORT=2024
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - LANGGRAPH_API_URL=http://backend:2024
+      - NEXT_PUBLIC_LANGGRAPH_API_URL=http://localhost:2024
+      - LANGGRAPH_RETRIEVAL_ASSISTANT_ID=retrieval_graph
+      - LANGGRAPH_INGESTION_ASSISTANT_ID=ingestion_graph
+    depends_on:
+      - backend
+    restart: unless-stopped
