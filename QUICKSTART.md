@@ -29,9 +29,9 @@
 Open `backend/.env` and fill in your values:
 
 ```env
-OPENAI_API_KEY=sk-...your-key-here...
-SUPABASE_URL=https://xxxx.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJ...your-service-role-key...
+GROQ_API_KEY=your_groq_api_key_here
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
 LANGCHAIN_TRACING_V2=false
 LANGCHAIN_API_KEY=
 LANGCHAIN_PROJECT=ai-agent-pdf-chatbot

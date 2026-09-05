@@ -27,9 +27,9 @@ Because we created `render.yaml` and a unified production `Dockerfile`, you can 
 6. Add your **Environment Variables**:
    | Variable | Value |
    |---|---|
-   | `GROQ_API_KEY` | `gsk_...` (Your Groq Key) |
-   | `SUPABASE_URL` | `https://...supabase.co` |
-   | `SUPABASE_SERVICE_ROLE_KEY` | `ey...` (Your Supabase Secret Key) |
+   | `GROQ_API_KEY` | `YOUR_GROQ_API_KEY_HERE` |
+   | `SUPABASE_URL` | `https://your-project.supabase.co` |
+   | `SUPABASE_SERVICE_ROLE_KEY` | `YOUR_SUPABASE_SERVICE_ROLE_KEY_HERE` |
    | `LANGGRAPH_API_URL` | `http://127.0.0.1:2024` |
    | `LANGGRAPH_RETRIEVAL_ASSISTANT_ID` | `retrieval_graph` |
    | `LANGGRAPH_INGESTION_ASSISTANT_ID` | `ingestion_graph` |
