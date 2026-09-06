@@ -7,8 +7,10 @@ import { startServer } from '@langchain/langgraph-cli/dist/server.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const backendDir = path.resolve(__dirname, '..');
 
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 2024;
-const host = process.env.HOST || '0.0.0.0';
+const port = process.env.LANGGRAPH_PORT
+  ? parseInt(process.env.LANGGRAPH_PORT, 10)
+  : 2024;
+const host = process.env.LANGGRAPH_HOST || '0.0.0.0';
 
 // Automatically free port if held by a previous stale process on Windows
 if (process.platform === 'win32') {

@@ -3,11 +3,11 @@ services:
     name: ai-pdf-chatbot
     env: node
     plan: free
-    buildCommand: yarn && yarn build
+    buildCommand: yarn install --ignore-engines && yarn build
     startCommand: yarn start
     envVars:
       - key: NODE_VERSION
-        value: 20.18.0
+        value: 22.14.0
       - key: GROQ_API_KEY
         sync: false
       - key: SUPABASE_URL

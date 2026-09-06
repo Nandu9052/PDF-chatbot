@@ -14,7 +14,9 @@ export const createServerClient = () => {
   }
 
   const rawUrl =
-    process.env.NEXT_PUBLIC_LANGGRAPH_API_URL || 'http://127.0.0.1:2024';
+    process.env.LANGGRAPH_API_URL ||
+    process.env.NEXT_PUBLIC_LANGGRAPH_API_URL ||
+    'http://127.0.0.1:2024';
   const apiUrl = rawUrl.replace('localhost', '127.0.0.1');
 
   const defaultHeaders: Record<string, string> = {
