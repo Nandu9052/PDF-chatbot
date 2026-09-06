@@ -46,6 +46,7 @@ export async function POST(req: Request) {
         {
           input: { query: message },
           streamMode: ['messages', 'updates', 'values'],
+          multitaskStrategy: 'rollback',
           config: {
             configurable: {
               ...retrievalAssistantStreamConfig,
