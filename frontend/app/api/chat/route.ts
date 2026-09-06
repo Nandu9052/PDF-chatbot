@@ -40,8 +40,23 @@ export async function POST(req: Request) {
       const assistantId = process.env.LANGGRAPH_RETRIEVAL_ASSISTANT_ID;
       const serverClient = createServerClient();
 
+      let activeThreadId = threadId;
+      try {
+        await serverClient.client.threads.get(threadId);
+      } catch {
+        try {
+          const newThread = await serverClient.client.threads.create({
+            thread_id: threadId,
+          });
+          activeThreadId = newThread.thread_id;
+        } catch {
+          const newThread = await serverClient.client.threads.create();
+          activeThreadId = newThread.thread_id;
+        }
+      }
+
       const stream = await serverClient.client.runs.stream(
-        threadId,
+        activeThreadId,
         assistantId,
         {
           input: { query: message },

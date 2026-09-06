@@ -45,6 +45,14 @@ export default function Home() {
       if (threadId) return;
 
       try {
+        const res = await fetch('/api/thread', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.thread_id) {
+            setThreadId(data.thread_id);
+            return;
+          }
+        }
         const thread = await client.createThread();
         setThreadId(thread.thread_id);
       } catch (error) {
